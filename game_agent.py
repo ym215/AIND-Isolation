@@ -37,8 +37,15 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
 
-    # TODO: finish this function!
-    raise NotImplementedError
+    # Go with available move for now
+    if player == game.__player_1__:
+        scoring_player = game.__player_1__
+        opponent_player = game.__player_2__
+    else:
+        scoring_player = game.__player_2__
+        opponent_player = game.__player_1__
+
+    return float(len(game.get_legal_moves(scoring_player)) - len(game.get_legal_moves(opponent_player)))
 
 
 class CustomPlayer:
@@ -172,8 +179,32 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        this_score = self.score(game, self)
+        print("this_score: {0}".format(this_score))
+        legal_moves = game.get_legal_moves()
+        print("legal_moves: {0}".format(legal_moves))
+
+        if depth == 0 or len(legal_moves) == 0:
+            return this_score, (-1, -1)
+
+        if maximizing_player:
+            max_score = -(game.width * game.height)
+            max_move = (-1, -1)
+            for move in legal_moves:
+                child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, False)
+                if child_score > max_score:
+                    max_score = child_score
+                    max_move = move
+            return max_score, max_move
+        else:
+            min_score = (game.width * game.height)
+            min_move = (-1, -1)
+            for move in legal_moves:
+                child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, True)
+                if child_score < min_score:
+                    min_score = child_score
+                    min_move = move
+            return min_score, min_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
