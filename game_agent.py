@@ -180,9 +180,7 @@ class CustomPlayer:
             raise Timeout()
 
         this_score = self.score(game, self)
-        print("this_score: {0}".format(this_score))
         legal_moves = game.get_legal_moves()
-        print("legal_moves: {0}".format(legal_moves))
 
         if depth == 0 or len(legal_moves) == 0:
             return this_score, (-1, -1)
@@ -247,5 +245,33 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        this_score = self.score(game, self)
+        legal_moves = game.get_legal_moves()
+
+        if depth == 0 or len(legal_moves) == 0:
+            return this_score, (-1, -1)
+
+        if maximizing_player:
+            max_score = -(game.width * game.height)
+            max_move = (-1, -1)
+            for move in legal_moves:
+                child_score, child_move = self.alphabeta(game.forecast_move(move), alpha, beta, depth - 1, False)
+                if child_score > max_score:
+                    max_score = child_score
+                    max_move = move
+                if max_score >= beta:
+                    break
+                alpha = max(alpha, max_score)
+            return max_score, max_move
+        else:
+            min_score = (game.width * game.height)
+            min_move = (-1, -1)
+            for move in legal_moves:
+                child_score, child_move = self.alphabeta(game.forecast_move(move), alpha, beta, depth - 1, True)
+                if child_score < min_score:
+                    min_score = child_score
+                    min_move = move
+                if min_score <= alpha:
+                    break
+                beta = min(beta, min_score)
+            return min_score, min_move
