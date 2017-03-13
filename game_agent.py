@@ -45,6 +45,8 @@ def custom_score(game, player):
         scoring_player = game.__player_2__
         opponent_player = game.__player_1__
 
+    game.get
+
     return float(len(game.get_legal_moves(scoring_player)) - len(game.get_legal_moves(opponent_player)))
 
 
@@ -180,16 +182,17 @@ class CustomPlayer:
             raise Timeout()
 
         this_score = self.score(game, self)
-        legal_moves = game.get_legal_moves()
 
         if depth == 0:
             return this_score, None
+
+        legal_moves = game.get_legal_moves()
 
         if len(legal_moves) == 0:
             return this_score, (-1, -1)
 
         if maximizing_player:
-            max_score = -(game.width * game.height)
+            max_score = float("-inf")
             max_move = None
             for move in legal_moves:
                 child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, False)
@@ -198,7 +201,7 @@ class CustomPlayer:
                     max_move = move
             return max_score, max_move
         else:
-            min_score = (game.width * game.height)
+            min_score = float("inf")
             min_move = None
             for move in legal_moves:
                 child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, True)
@@ -249,10 +252,11 @@ class CustomPlayer:
             raise Timeout()
 
         this_score = self.score(game, self)
-        legal_moves = game.get_legal_moves()
 
         if depth == 0:
             return this_score, None
+
+        legal_moves = game.get_legal_moves()
 
         if len(legal_moves) == 0:
             return this_score, (-1, -1)
@@ -262,10 +266,9 @@ class CustomPlayer:
             max_move = None
             for move in legal_moves:
                 child_score, child_move = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, False)
-                if child_score > max_score:
-                    max_score = child_score
-                    if child_move is not None:
-                        max_move = move
+                max_score = max(max_score, child_score)
+                if child_move is not None:
+                    max_move = move
                 if max_score >= beta:
                     break
                 alpha = max(alpha, max_score)
@@ -275,10 +278,9 @@ class CustomPlayer:
             min_move = None
             for move in legal_moves:
                 child_score, child_move = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, True)
-                if child_score < min_score:
-                    min_score = child_score
-                    if child_move is not None:
-                        min_move = move
+                min_score = min(min_score, child_score)
+                if child_move is not None:
+                    min_move = move
                 if min_score <= alpha:
                     break
                 beta = min(beta, min_score)
