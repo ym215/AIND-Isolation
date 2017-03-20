@@ -45,8 +45,6 @@ def custom_score(game, player):
         scoring_player = game.__player_2__
         opponent_player = game.__player_1__
 
-    game.get
-
     return float(len(game.get_legal_moves(scoring_player)) - len(game.get_legal_moves(opponent_player)))
 
 
@@ -178,37 +176,42 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
+        def check_timeout():
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise Timeout()
 
-        this_score = self.score(game, self)
+        def maximizing(game, depth):
+            check_timeout()
 
-        if depth == 0:
-            return this_score, None
+            if depth == 0:
+                return self.score(game, self), None
+            else:
+                best_score = float("-inf")
+                potential_scores = []
+                legal_moves = game.get_legal_moves()
+                for move in legal_moves:
+                    potential_scores.append(minimizing(game.forecast_move(move), depth - 1)[0])
+                    best_score = max(potential_scores)
+            return best_score, legal_moves[potential_scores.index(best_score)]
 
-        legal_moves = game.get_legal_moves()
+        def minimizing(game, depth):
+            check_timeout()
 
-        if len(legal_moves) == 0:
-            return this_score, (-1, -1)
+            if depth == 0:
+                return self.score(game, self), None
+            else:
+                best_score = float("inf")
+                potential_scores = []
+                legal_moves = game.get_legal_moves()
+                for move in legal_moves:
+                    potential_scores.append(maximizing(game.forecast_move(move), depth - 1)[0])
+                    best_score = min(potential_scores)
+            return best_score, legal_moves[potential_scores.index(best_score)]
 
-        if maximizing_player:
-            max_score = float("-inf")
-            max_move = None
-            for move in legal_moves:
-                child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, False)
-                if child_score > max_score:
-                    max_score = child_score
-                    max_move = move
-            return max_score, max_move
-        else:
-            min_score = float("inf")
-            min_move = None
-            for move in legal_moves:
-                child_score, child_move = self.minimax(game.forecast_move(move), depth - 1, True)
-                if child_score < min_score:
-                    min_score = child_score
-                    min_move = move
-            return min_score, min_move
+        check_timeout()
+
+        return maximizing(game, depth)
+
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
@@ -248,40 +251,44 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise Timeout()
+        def check_timeout():
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise Timeout()
 
-        this_score = self.score(game, self)
+        def maximizing(game, depth, alpha, beta):
+            check_timeout()
 
-        if depth == 0:
-            return this_score, None
+            if depth == 0:
+                return self.score(game, self), None
+            else:
+                best_score = float("-inf")
+                potential_scores = []
+                legal_moves = game.get_legal_moves()
+                for move in legal_moves:
+                    potential_scores.append(minimizing(game.forecast_move(move), depth - 1, alpha, beta)[0])
+                    best_score = max(potential_scores)
+                    if best_score >= beta:
+                        break
+                    alpha = max(alpha, best_score)
+                return best_score, legal_moves[potential_scores.index(best_score)]
 
-        legal_moves = game.get_legal_moves()
+        def minimizing(game, depth, alpha, beta):
+            check_timeout()
 
-        if len(legal_moves) == 0:
-            return this_score, (-1, -1)
+            if depth == 0:
+                return self.score(game, self), None
+            else:
+                best_score = float("inf")
+                potential_scores = []
+                legal_moves = game.get_legal_moves()
+                for move in game.get_legal_moves():
+                    potential_scores.append(maximizing(game.forecast_move(move), depth - 1, alpha, beta)[0])
+                    best_score = min(potential_scores)
+                    if best_score <= alpha:
+                        break
+                    beta = min(beta, best_score)
+            return best_score, legal_moves[potential_scores.index(best_score)]
 
-        if maximizing_player:
-            max_score = float("-inf")
-            max_move = None
-            for move in legal_moves:
-                child_score, child_move = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, False)
-                max_score = max(max_score, child_score)
-                if child_move is not None:
-                    max_move = move
-                if max_score >= beta:
-                    break
-                alpha = max(alpha, max_score)
-            return max_score, max_move
-        else:
-            min_score = float("inf")
-            min_move = None
-            for move in legal_moves:
-                child_score, child_move = self.alphabeta(game.forecast_move(move), depth - 1, alpha, beta, True)
-                min_score = min(min_score, child_score)
-                if child_move is not None:
-                    min_move = move
-                if min_score <= alpha:
-                    break
-                beta = min(beta, min_score)
-            return min_score, min_move
+        check_timeout()
+
+        return maximizing(game, depth, alpha, beta)
