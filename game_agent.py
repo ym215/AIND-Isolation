@@ -79,7 +79,7 @@ class CustomPlayer:
     """
 
     def __init__(self, search_depth=3, score_fn=custom_score,
-                 iterative=True, method='minimax', timeout=10.):
+                 iterative=True, method='minimax', timeout=5.):
         self.search_depth = search_depth
         self.iterative = iterative
         self.score = score_fn
@@ -143,29 +143,33 @@ class CustomPlayer:
             # when the timer gets close to expiring
 
             if self.method == "minimax":
-                if self.iterative == True:
+                if self.iterative:
                     depth = 0
                     while 1:
-                        index = 0;
+                        index = 0
                         for move in legal_moves:
                             scores[index] = self.minimax(game.forecast_move(move), depth, False)[0]
-                            index = index + 1;
-                        depth = depth + 1
+                            index += 1
+                        depth += 1
                 else:
+                    index = 0
                     for move in legal_moves:
-                        scores.append(self.minimax(game.forecast_move(move), 0, False)[0])
+                        scores[index] = self.minimax(game.forecast_move(move), 0, False)[0]
+                        index += 1
             else:
-                if self.iterative == True:
+                if self.iterative:
                     depth = 0
                     while 1:
-                        index = 0;
+                        index = 0
                         for move in legal_moves:
                             scores[index] = self.alphabeta(game.forecast_move(move), depth, float("-inf"), float("inf"), False)[0]
-                            index = index + 1;
-                        depth = depth + 1
+                            index += 1
+                        depth += 1
                 else:
+                    index = 0
                     for move in legal_moves:
-                        scores.append(self.alphabeta(game.forecast_move(move), 0, float("-inf"), float("inf"), False)[0])
+                        scores[index] = self.alphabeta(game.forecast_move(move), 0, float("-inf"), float("inf"), False)[0]
+                        index += 1
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
@@ -225,7 +229,11 @@ class CustomPlayer:
                 for move in legal_moves:
                     potential_scores.append(minimizing(game.forecast_move(move), depth - 1)[0])
                     best_score = max(potential_scores)
-            return best_score, legal_moves[potential_scores.index(best_score)]
+                index = potential_scores.index(best_score) if best_score in potential_scores else -1
+                if index < 0:
+                    return best_score, None
+                else:
+                    return best_score, legal_moves[potential_scores.index(best_score)]
 
         def minimizing(game, depth):
             check_timeout()
@@ -239,7 +247,11 @@ class CustomPlayer:
                 for move in legal_moves:
                     potential_scores.append(maximizing(game.forecast_move(move), depth - 1)[0])
                     best_score = min(potential_scores)
-            return best_score, legal_moves[potential_scores.index(best_score)]
+                index = potential_scores.index(best_score) if best_score in potential_scores else -1
+                if index < 0:
+                    return best_score, None
+                else:
+                    return best_score, legal_moves[potential_scores.index(best_score)]
 
         check_timeout()
 
@@ -303,7 +315,11 @@ class CustomPlayer:
                     if best_score >= beta:
                         break
                     alpha = max(alpha, best_score)
-                return best_score, legal_moves[potential_scores.index(best_score)]
+                index = potential_scores.index(best_score) if best_score in potential_scores else -1
+                if index < 0:
+                    return best_score, None
+                else:
+                    return best_score, legal_moves[index]
 
         def minimizing(game, depth, alpha, beta):
             check_timeout()
@@ -320,7 +336,11 @@ class CustomPlayer:
                     if best_score <= alpha:
                         break
                     beta = min(beta, best_score)
-            return best_score, legal_moves[potential_scores.index(best_score)]
+                index = potential_scores.index(best_score) if best_score in potential_scores else -1
+                if index < 0:
+                    return best_score, None
+                else:
+                    return best_score, legal_moves[index]
 
         check_timeout()
 
