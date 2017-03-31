@@ -38,15 +38,8 @@ def custom_score(game, player):
     """
 
     # Go with available move for now
-    if player == game.__player_1__:
-        scoring_player = game.__player_1__
-        opponent_player = game.__player_2__
-    else:
-        scoring_player = game.__player_2__
-        opponent_player = game.__player_1__
 
-    return float(len(game.get_legal_moves(scoring_player)) - len(game.get_legal_moves(opponent_player)))
-
+    return float(len(game.get_legal_moves(player)))
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -228,12 +221,12 @@ class CustomPlayer:
                 legal_moves = game.get_legal_moves()
                 for move in legal_moves:
                     potential_scores.append(minimizing(game.forecast_move(move), depth - 1)[0])
-                    best_score = max(potential_scores)
+                best_score = max(potential_scores)
                 index = potential_scores.index(best_score) if best_score in potential_scores else -1
                 if index < 0:
                     return best_score, None
                 else:
-                    return best_score, legal_moves[potential_scores.index(best_score)]
+                    return best_score, legal_moves[index]
 
         def minimizing(game, depth):
             check_timeout()
@@ -246,12 +239,12 @@ class CustomPlayer:
                 legal_moves = game.get_legal_moves()
                 for move in legal_moves:
                     potential_scores.append(maximizing(game.forecast_move(move), depth - 1)[0])
-                    best_score = min(potential_scores)
+                best_score = min(potential_scores)
                 index = potential_scores.index(best_score) if best_score in potential_scores else -1
                 if index < 0:
                     return best_score, None
                 else:
-                    return best_score, legal_moves[potential_scores.index(best_score)]
+                    return best_score, legal_moves[index]
 
         check_timeout()
 
